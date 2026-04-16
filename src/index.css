@@ -1,0 +1,39 @@
+@import "tailwindcss";
+@config "../tailwind.config.js";
+
+@layer base {
+  body {
+    @apply bg-background text-slate-800 antialiased selection:bg-primary-200;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply bg-primary-500 hover:bg-primary-600 text-white px-6 py-2 rounded-xl transition-all shadow-soft hover:shadow-soft-lg font-medium tracking-wide active:scale-95 disabled:opacity-50 disabled:pointer-events-none;
+  }
+  
+  .btn-secondary {
+    @apply bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 px-6 py-2 rounded-xl transition-all shadow-sm hover:shadow-soft font-medium active:scale-95;
+  }
+
+  .card {
+    @apply bg-white rounded-2xl p-6 shadow-soft border border-slate-100;
+  }
+  
+  .input-field {
+    @apply w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:border-primary-500 focus:ring-2 focus:ring-primary-100 transition-all outline-none;
+  }
+
+  .badge-success {
+    @apply bg-success-100 text-success-700 px-3 py-1 rounded-full text-sm font-medium border border-success-200;
+  }
+  
+  .badge-warning {
+    @apply bg-amber-100 text-amber-700 px-3 py-1 rounded-full text-sm font-medium border border-amber-200;
+  }
+  
+  .badge-primary {
+    @apply bg-primary-100 text-primary-700 px-3 py-1 rounded-full text-sm font-medium border border-primary-200;
+  }
+}
