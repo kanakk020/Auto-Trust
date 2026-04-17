@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
-import { ShieldCheck, Mail, Lock, User, Briefcase, Search, ArrowRight, CheckCircle2 } from 'lucide-react';
+import { ShieldCheck, Mail, Lock, User, Briefcase, Search, ArrowRight, CheckCircle2, Phone, CreditCard, Fingerprint } from 'lucide-react';
 
 export default function Login() {
   const [searchParams] = useSearchParams();
@@ -147,9 +147,26 @@ export default function Login() {
                 <form onSubmit={handleSubmit} className="space-y-4">
                   <AnimateHeight>
                     {!isLogin && (
-                      <div className="relative">
-                        <User className="absolute left-4 top-3.5 text-slate-500" size={20} />
-                        <input type="text" placeholder="Full Name" className="w-full pl-12 pr-4 py-3 bg-slate-900/50 border border-slate-700 text-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all placeholder:text-slate-600" required />
+                      <div className="space-y-4">
+                        <div className="relative">
+                          <User className="absolute left-4 top-3.5 text-slate-500" size={20} />
+                          <input type="text" placeholder="Full Name" className="w-full pl-12 pr-4 py-3 bg-slate-900/50 border border-slate-700 text-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all placeholder:text-slate-600" required />
+                        </div>
+
+                        <div className="relative">
+                          <Phone className="absolute left-4 top-3.5 text-slate-500" size={20} />
+                          <input type="tel" placeholder="Phone Number" pattern="[0-9]{10}" maxLength={10} className="w-full pl-12 pr-4 py-3 bg-slate-900/50 border border-slate-700 text-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all placeholder:text-slate-600" required />
+                        </div>
+
+                        <div className="relative">
+                          <Fingerprint className="absolute left-4 top-3.5 text-slate-500" size={20} />
+                          <input type="text" placeholder="Aadhaar Card No. (xxxx xxxx xxxx)" pattern="[0-9]{12}" maxLength={12} className="w-full pl-12 pr-4 py-3 bg-slate-900/50 border border-slate-700 text-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all placeholder:text-slate-600" required />
+                        </div>
+
+                        <div className="relative">
+                          <CreditCard className="absolute left-4 top-3.5 text-slate-500" size={20} />
+                          <input type="text" placeholder="PAN Card No. (ABCDE1234F)" pattern="[A-Z]{5}[0-9]{4}[A-Z]{1}" maxLength={10} className="w-full pl-12 pr-4 py-3 bg-slate-900/50 border border-slate-700 text-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all placeholder:text-slate-600 uppercase" required />
+                        </div>
                       </div>
                     )}
                   </AnimateHeight>
