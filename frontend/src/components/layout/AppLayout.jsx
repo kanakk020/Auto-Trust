@@ -2,21 +2,35 @@ import React, { useState } from 'react';
 import { Outlet, Link, useLocation } from 'react-router-dom';
 import {
   LayoutDashboard, FileText, FilePlus, Wallet, AlertTriangle,
-  User, Bell, LogOut, Menu, X, Search, Shield, Star
+  User, Bell, LogOut, Menu, X, Search, Shield, Star,
+  MessageSquare, History, HelpCircle, ChevronRight
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
-const navItems = [
+const mainNavItems = [
   { name: 'Dashboard', path: '/dashboard', icon: LayoutDashboard },
   { name: 'My Contracts', path: '/contracts', icon: FileText },
-  { name: 'Create Contract', path: '/create-contract', icon: FilePlus },
+  { name: 'Create Contract', path: '/create-contract', icon: FilePlus, highlight: true },
   { name: 'Payments', path: '/payments', icon: Wallet },
-  { name: 'Disputes', path: '/disputes', icon: AlertTriangle },
+  { name: 'Messages', path: '/messages', icon: MessageSquare, badge: 3 },
+  { name: 'Disputes', path: '/disputes', icon: AlertTriangle, badge: 0 },
+];
+
+const secondaryNavItems = [
+  { name: 'Notifications', path: '/notifications', icon: Bell },
+  { name: 'Activity', path: '/activity', icon: History },
+  { name: 'Help & Support', path: '/help', icon: HelpCircle },
   { name: 'Profile', path: '/profile', icon: User },
 ];
 
 const Sidebar = ({ isOpen, setIsOpen }) => {
   const location = useLocation();
+
+  const isActive = (path) => {
+    return location.pathname === path
+      || (path === '/contracts' && location.pathname.startsWith('/contract/'))
+      || (path === '/dashboard' && location.pathname === '/dashboard');
+  };
 
   return (
     <>
@@ -30,7 +44,7 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
         )}
       </AnimatePresence>
 
-      <div className={`fixed inset-y-0 left-0 z-30 w-[260px] bg-dark-950 border-r border-dark-800/50 transform transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static flex flex-col ${isOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+      <div className={`fixed inset-y-0 left-0 z-30 w-[270px] bg-dark-950 border-r border-dark-800/50 transform transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static flex flex-col ${isOpen ? 'translate-x-0' : '-translate-x-full'}`}>
         
         {/* Logo */}
         <div className="flex items-center justify-between h-[68px] px-5 border-b border-dark-800/50">
@@ -56,31 +70,61 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
           </div>
         </div>
 
-        {/* Navigation */}
+        {/* Main Navigation */}
         <div className="flex-1 overflow-y-auto py-3 px-3">
           <p className="text-[10px] font-bold uppercase tracking-widest text-dark-500 px-3 mb-3">Menu</p>
           <nav className="space-y-1">
-            {navItems.map((item) => {
+            {mainNavItems.map((item) => {
               const Icon = item.icon;
-              const isActive = location.pathname === item.path
-                || (item.path === '/contracts' && location.pathname.startsWith('/contract/'))
-                || (item.path === '/dashboard' && location.pathname === '/dashboard');
+              const active = isActive(item.path);
+              return (
+                <Link
+                  key={item.name}
+                  to={item.path}
+                  onClick={() => setIsOpen(false)}
+                  className={`flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium transition-all duration-200 text-sm relative
+                    ${item.highlight && !active
+                      ? 'bg-gradient-to-r from-primary-500/10 to-accent-500/10 text-primary-400 border border-primary-500/20 hover:from-primary-500/20 hover:to-accent-500/20'
+                      : active
+                        ? 'bg-gradient-to-r from-primary-500/15 to-accent-500/15 text-primary-300 border border-primary-500/20 shadow-sm'
+                        : 'text-dark-400 hover:bg-dark-800/50 hover:text-dark-200'
+                    }`}
+                >
+                  <Icon size={19} />
+                  {item.name}
+                  {item.badge > 0 && (
+                    <span className="ml-auto bg-primary-500 text-white text-[10px] font-bold w-5 h-5 rounded-full flex items-center justify-center">{item.badge}</span>
+                  )}
+                  {item.badge === 0 && item.name === 'Disputes' && (
+                    <span className="ml-auto bg-dark-700 text-dark-400 text-[10px] font-bold w-5 h-5 rounded-full flex items-center justify-center">0</span>
+                  )}
+                  {item.highlight && !active && (
+                    <ChevronRight size={14} className="ml-auto text-primary-500" />
+                  )}
+                </Link>
+              );
+            })}
+          </nav>
+
+          {/* Secondary Nav */}
+          <p className="text-[10px] font-bold uppercase tracking-widest text-dark-500 px-3 mt-6 mb-3">General</p>
+          <nav className="space-y-1">
+            {secondaryNavItems.map((item) => {
+              const Icon = item.icon;
+              const active = isActive(item.path);
               return (
                 <Link
                   key={item.name}
                   to={item.path}
                   onClick={() => setIsOpen(false)}
                   className={`flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium transition-all duration-200 text-sm
-                    ${isActive
+                    ${active
                       ? 'bg-gradient-to-r from-primary-500/15 to-accent-500/15 text-primary-300 border border-primary-500/20 shadow-sm'
                       : 'text-dark-400 hover:bg-dark-800/50 hover:text-dark-200'
                     }`}
                 >
                   <Icon size={19} />
                   {item.name}
-                  {item.name === 'Disputes' && (
-                    <span className="ml-auto bg-danger-500 text-white text-[10px] font-bold w-5 h-5 rounded-full flex items-center justify-center">0</span>
-                  )}
                 </Link>
               );
             })}
@@ -148,13 +192,13 @@ const Navbar = ({ setIsOpen }) => {
           <div className="hidden sm:block text-right">
             <p className="text-sm font-semibold text-dark-100 leading-tight">Client</p>
             <p className="text-[11px] text-dark-500 flex items-center justify-end gap-1">
-              <span className="inline-block w-1.5 h-1.5 rounded-full bg-primary-500"></span>
+              <span className="inline-block w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
               Verified
             </p>
           </div>
-          <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-primary-500 to-accent-600 flex items-center justify-center text-white font-bold text-sm shadow-sm cursor-pointer hover:shadow-lg hover:shadow-primary-500/20 transition-shadow">
+          <Link to="/profile" className="h-10 w-10 rounded-xl bg-gradient-to-br from-primary-500 to-accent-600 flex items-center justify-center text-white font-bold text-sm shadow-sm cursor-pointer hover:shadow-lg hover:shadow-primary-500/20 transition-shadow">
             CL
-          </div>
+          </Link>
         </div>
       </div>
     </header>
