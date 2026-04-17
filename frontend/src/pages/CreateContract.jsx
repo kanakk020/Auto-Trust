@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { Calendar, DollarSign, User, FileText, Pickaxe, Send, ArrowLeft } from 'lucide-react';
+import { Calendar, DollarSign, User, FileText, Pickaxe, Send, ArrowLeft, AlertCircle, CheckCircle2, Loader2 } from 'lucide-react';
+import { useUser } from '../context/UserContext';
 
 export default function CreateContract() {
   const navigate = useNavigate();
+  const { user } = useUser();
   const [formData, setFormData] = useState({
     partyB: '',
     title: '',
@@ -12,11 +14,53 @@ export default function CreateContract() {
     amount: '',
     deadline: ''
   });
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Simulate creation
-    navigate('/dashboard');
+    setError('');
+    setLoading(true);
+
+    try {
+      const freelancerRes = await fetch(`http://localhost:5000/api/auth/freelancer/${formData.partyB}`);
+      const freelancerData = await freelancerRes.json();
+
+      if (!freelancerRes.ok) {
+        setError(freelancerData.message || 'Freelancer not found with that email.');
+        setLoading(false);
+        return;
+      }
+
+      const token = localStorage.getItem('token');
+      const res = await fetch('http://localhost:5000/api/contracts', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          title: formData.title,
+          description: formData.description,
+          partyA: user._id,
+          partyB: freelancerData._id,
+          amount: Number(formData.amount),
+          deadline: formData.deadline
+        })
+      });
+
+      const data = await res.json();
+
+      if (res.ok) {
+        navigate('/contracts');
+      } else {
+        setError(data.error || 'Failed to create contract.');
+      }
+    } catch (err) {
+      setError('Connection error. Server may be down.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -38,6 +82,13 @@ export default function CreateContract() {
 
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
         <form onSubmit={handleSubmit} className="card space-y-6">
+
+          {error && (
+            <div className="bg-red-500/10 border border-red-500/20 text-red-400 p-3.5 rounded-xl flex items-center gap-3 text-sm">
+              <AlertCircle size={18} className="flex-shrink-0" />
+              <p className="font-medium">{error}</p>
+            </div>
+          )}
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-2">
@@ -46,7 +97,7 @@ export default function CreateContract() {
                 <User className="absolute left-4 top-3.5 text-slate-400" size={18} />
                 <input 
                   type="text" 
-                  value="" 
+                  value={user.name || ''} 
                   placeholder="Your name (auto-filled on login)"
                   disabled 
                   className="input-field pl-11 bg-slate-100 text-slate-500 font-medium"
@@ -140,9 +191,9 @@ export default function CreateContract() {
             <button type="button" onClick={() => navigate('/dashboard')} className="btn-secondary">
               Cancel
             </button>
-            <button type="submit" className="btn-primary flex items-center gap-2">
-              <Send size={18} />
-              Generate Smart Contract
+            <button type="submit" disabled={loading} className="btn-primary flex items-center gap-2">
+              {loading ? <Loader2 size={18} className="animate-spin" /> : <Send size={18} />}
+              {loading ? 'Creating...' : 'Generate Smart Contract'}
             </button>
           </div>
         </form>
