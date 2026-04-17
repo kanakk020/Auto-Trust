@@ -1,25 +1,69 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ArrowLeft, CheckCircle2, FileCheck, Info, MessageSquare, Clock, ArrowRight, ShieldCheck, Check, Send, FileX } from 'lucide-react';
+import { ArrowLeft, CheckCircle2, FileCheck, Info, MessageSquare, Clock, ArrowRight, ShieldCheck, Check, Send, FileX, Loader2 } from 'lucide-react';
 
 export default function ContractDetails() {
   const { id } = useParams();
   const [contract, setContract] = useState(null);
+  const [loading, setLoading] = useState(true);
   const [messages, setMessages] = useState([]);
   const [activeTab, setActiveTab] = useState('details');
+  const [actionLoading, setActionLoading] = useState(false);
 
   useEffect(() => {
-    // TODO: Replace with real API call
-    // For now, no contract data is available
-    setContract(null);
-    setMessages([]);
+    const fetchContract = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        const res = await fetch(`http://localhost:5000/api/contracts/${id}`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (res.ok) {
+          const data = await res.json();
+          setContract(data);
+        }
+      } catch (err) {
+        console.log('Failed to fetch contract:', err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchContract();
   }, [id]);
+
+  const handleAction = async (actionPath) => {
+    setActionLoading(true);
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch(`http://localhost:5000/api/contracts/${id}/${actionPath}`, {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (res.ok) {
+        const updatedContract = await res.json();
+        setContract(updatedContract);
+      } else {
+        alert('Action failed. See console.');
+        console.error(await res.json());
+      }
+    } catch (err) {
+      console.error(err);
+      alert('Connection error');
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  if (loading) return (
+    <div className="max-w-5xl mx-auto flex items-center justify-center py-20">
+      <Loader2 size={32} className="animate-spin text-primary-400" />
+    </div>
+  );
 
   if (!contract) return (
     <div className="max-w-5xl mx-auto pb-10">
       <div className="flex items-center gap-4 mb-6">
-        <Link to="/dashboard" className="p-2 rounded-full hover:bg-slate-200 text-slate-500 transition-colors">
+        <Link to="/contracts" className="p-2 rounded-full hover:bg-slate-200 text-slate-500 transition-colors">
           <ArrowLeft size={20} />
         </Link>
         <div>
@@ -33,29 +77,42 @@ export default function ContractDetails() {
         </div>
         <h3 className="text-lg font-semibold text-slate-700 mb-2">Contract not found</h3>
         <p className="text-sm text-slate-500 mb-6">This contract doesn't exist or hasn't been loaded yet.</p>
-        <Link to="/dashboard" className="btn-primary inline-flex items-center gap-2">
-          <ArrowLeft size={18} /> Back to Dashboard
+        <Link to="/contracts" className="btn-primary inline-flex items-center gap-2">
+          <ArrowLeft size={18} /> Back to Contracts
         </Link>
       </div>
     </div>
   );
 
+  const statusStepMap = {
+    'Created': 1,
+    'FundsLocked': 2,
+    'WorkSubmitted': 3,
+    'Completed': 4,
+    'Disputed': 3,
+    'Resolved': 4
+  };
+  const currentStep = statusStepMap[contract.status] || 1;
+
   const steps = [
     { num: 1, title: 'Created', desc: 'Contract drafted' },
-    { num: 2, title: 'Both Agreed', desc: 'Terms accepted' },
-    { num: 3, title: 'In Progress', desc: 'Work started' },
+    { num: 2, title: 'Funds Locked', desc: 'Escrow funded' },
+    { num: 3, title: 'Work Submitted', desc: 'Proof uploaded' },
     { num: 4, title: 'Completed', desc: 'Funds released' }
   ];
+
+  const partyAName = contract.partyA?.name || 'Unknown';
+  const partyBName = contract.partyB?.name || 'Unknown';
 
   return (
     <div className="max-w-5xl mx-auto pb-10">
       <div className="flex items-center gap-4 mb-6">
-        <Link to="/dashboard" className="p-2 rounded-full hover:bg-slate-200 text-slate-500 transition-colors">
+        <Link to="/contracts" className="p-2 rounded-full hover:bg-slate-200 text-slate-500 transition-colors">
           <ArrowLeft size={20} />
         </Link>
         <div>
           <h1 className="text-2xl font-bold text-slate-900">{contract.title}</h1>
-          <p className="text-sm text-slate-500">ID: {contract.id} • Created on {new Date(contract.createdAt).toLocaleDateString()}</p>
+          <p className="text-sm text-slate-500">Status: {contract.status} • Created on {new Date(contract.createdAt).toLocaleDateString()}</p>
         </div>
       </div>
 
@@ -67,13 +124,13 @@ export default function ContractDetails() {
               <div className="absolute top-4 left-4 right-4 h-1 bg-slate-100 rounded-full" />
               <div 
                 className="absolute top-4 left-4 h-1 bg-success-500 rounded-full transition-all duration-700" 
-                style={{ width: `${((contract.step - 1) / 3) * 100}%` }}
+                style={{ width: `${((currentStep - 1) / 3) * 100}%` }}
               />
               
               <div className="relative flex justify-between">
                 {steps.map((step) => {
-                  const isCompleted = contract.step >= step.num;
-                  const isCurrent = contract.step === step.num;
+                  const isCompleted = currentStep >= step.num;
+                  const isCurrent = currentStep === step.num;
                   return (
                     <div key={step.num} className="flex flex-col items-center flex-1">
                       <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm mb-2 border-2 transition-colors z-10 bg-white
@@ -114,28 +171,49 @@ export default function ContractDetails() {
                     <h4 className="text-sm font-bold text-slate-800 uppercase tracking-wider mb-3">Parties Involved</h4>
                     <div className="flex items-center gap-4 items-stretch">
                       <div className="flex-1 bg-slate-50 p-4 rounded-xl border border-slate-100">
-                        <p className="text-xs text-slate-500 mb-1">Party A</p>
-                        <p className="font-semibold">{contract.partyA}</p>
+                        <p className="text-xs text-slate-500 mb-1">Party A (Client)</p>
+                        <p className="font-semibold">{partyAName}</p>
+                        <p className="text-xs text-slate-400">{contract.partyA?.email}</p>
                       </div>
                       <div className="flex items-center justify-center text-slate-300">
                         <ArrowRight />
                       </div>
                       <div className="flex-1 bg-slate-50 p-4 rounded-xl border border-slate-100">
-                        <p className="text-xs text-slate-500 mb-1">Party B</p>
-                        <p className="font-semibold">{contract.partyB}</p>
+                        <p className="text-xs text-slate-500 mb-1">Party B (Freelancer)</p>
+                        <p className="font-semibold">{partyBName}</p>
+                        <p className="text-xs text-slate-400">{contract.partyB?.email}</p>
                       </div>
                     </div>
                   </div>
+
+                  {contract.description && (
+                    <div>
+                      <h4 className="text-sm font-bold text-slate-800 uppercase tracking-wider mb-3">Description</h4>
+                      <div className="prose prose-sm text-slate-600 bg-slate-50 p-5 rounded-xl border border-slate-100">
+                        <p>{contract.description}</p>
+                      </div>
+                    </div>
+                  )}
 
                   <div>
                     <h4 className="text-sm font-bold text-slate-800 uppercase tracking-wider mb-3">Terms</h4>
                     <div className="prose prose-sm text-slate-600 bg-slate-50 p-5 rounded-xl border border-slate-100">
                       <p>1. The Contractor agrees to perform the services described as "{contract.title}".</p>
                       <p>2. The Client agrees to pay the total amount of <strong>${contract.amount}</strong> upon successful completion.</p>
-                      <p>3. The deadline for completion is <strong>{new Date(contract.deadline).toLocaleDateString()}</strong>.</p>
+                      <p>3. The deadline for completion is <strong>{contract.deadline ? new Date(contract.deadline).toLocaleDateString() : 'N/A'}</strong>.</p>
                       <p>4. Funds are held in AutoTrust escrow until both parties confirm completion.</p>
                     </div>
                   </div>
+
+                  {contract.blockchainTxHash && (
+                    <div>
+                      <h4 className="text-sm font-bold text-slate-800 uppercase tracking-wider mb-3">Blockchain</h4>
+                      <div className="bg-slate-50 p-4 rounded-xl border border-slate-100">
+                        <p className="text-xs text-slate-500 mb-1">Transaction Hash</p>
+                        <p className="text-sm font-mono text-slate-700 break-all">{contract.blockchainTxHash}</p>
+                      </div>
+                    </div>
+                  )}
                 </motion.div>
               ) : (
                 <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex flex-col h-full h-[400px]">
@@ -175,15 +253,16 @@ export default function ContractDetails() {
             <p className="text-4xl font-bold mb-6">${contract.amount}</p>
             
             <div className="space-y-3 pt-6 border-t border-slate-800">
-              {contract.status === 'Pending' && (
+              {contract.status === 'Created' && (
                 <>
-                  <button className="btn-primary w-full bg-success-500 hover:bg-success-600 text-white py-3 border-0">Accept Terms</button>
-                  <button className="w-full bg-slate-800 hover:bg-slate-700 text-white py-3 rounded-xl transition-colors font-medium">Reject</button>
+                  <button onClick={() => handleAction('lock')} disabled={actionLoading} className="btn-primary w-full bg-success-500 hover:bg-success-600 text-white py-3 border-0">
+                    {actionLoading ? 'Processing...' : 'Lock Funds'}
+                  </button>
                 </>
               )}
-              {contract.status === 'In Progress' && (
-                <button className="btn-primary w-full bg-success-500 hover:bg-success-600 text-white py-3 border-0 flex items-center justify-center gap-2">
-                  <CheckCircle2 size={18} /> Mark as Completed
+              {(contract.status === 'FundsLocked' || contract.status === 'WorkSubmitted') && (
+                <button onClick={() => handleAction('complete')} disabled={actionLoading} className="btn-primary w-full bg-success-500 hover:bg-success-600 text-white py-3 border-0 flex items-center justify-center gap-2">
+                  <CheckCircle2 size={18} /> {actionLoading ? 'Processing...' : 'Mark as Completed'}
                 </button>
               )}
               {contract.status === 'Completed' && (

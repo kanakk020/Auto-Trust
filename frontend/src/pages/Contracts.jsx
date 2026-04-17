@@ -1,35 +1,70 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Link, useNavigate } from 'react-router-dom';
 import {
   FileText, Eye, Clock, CheckCircle, AlertTriangle,
-  Search, Filter, ChevronRight, PlusCircle, ArrowLeft
+  Search, Filter, ChevronRight, PlusCircle, ArrowLeft, Loader2
 } from 'lucide-react';
-
-const contracts = [];
+import { useUser } from '../context/UserContext';
 
 const getStatusBadge = (status) => {
   const map = {
-    'Active': 'badge-primary',
-    'Pending': 'badge-warning',
+    'Created': 'badge-primary',
+    'FundsLocked': 'badge-warning',
+    'WorkSubmitted': 'badge-warning',
     'Completed': 'badge-success',
     'Disputed': 'badge-danger',
+    'Resolved': 'badge-success',
   };
   return map[status] || 'badge-neutral';
 };
 
 const getStatusIcon = (status) => {
   const map = {
-    'Active': <FileText size={14} />,
-    'Pending': <Clock size={14} />,
+    'Created': <FileText size={14} />,
+    'FundsLocked': <Clock size={14} />,
+    'WorkSubmitted': <Clock size={14} />,
     'Completed': <CheckCircle size={14} />,
     'Disputed': <AlertTriangle size={14} />,
+    'Resolved': <CheckCircle size={14} />,
   };
   return map[status];
 };
 
 export default function Contracts() {
   const navigate = useNavigate();
+  const { user } = useUser();
+  const [contracts, setContracts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState('');
+
+  useEffect(() => {
+    const fetchContracts = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        const url = user._id
+          ? `http://localhost:5000/api/contracts?userId=${user._id}`
+          : 'http://localhost:5000/api/contracts';
+        const res = await fetch(url, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (res.ok) {
+          const data = await res.json();
+          setContracts(data);
+        }
+      } catch (err) {
+        console.log('Failed to fetch contracts:', err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchContracts();
+  }, [user._id]);
+
+  const filtered = contracts.filter(c =>
+    c.title?.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
   return (
     <div className="max-w-[1400px] mx-auto space-y-6">
       <motion.button
@@ -62,6 +97,8 @@ export default function Contracts() {
           <input
             type="text"
             placeholder="Search contracts..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
             className="w-full pl-10 pr-4 py-2.5 bg-dark-800/50 border border-dark-700/50 rounded-xl text-sm text-dark-200 focus:bg-dark-800 focus:border-primary-500/50 focus:ring-2 focus:ring-primary-500/10 outline-none transition-all placeholder:text-dark-500"
           />
         </div>
@@ -71,49 +108,52 @@ export default function Contracts() {
       </div>
 
       {/* Contract Cards */}
-      <div className="grid gap-4">
-        {contracts.map((contract, idx) => (
-          <motion.div
-            key={contract.id}
-            initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: idx * 0.06 }}
-            className="rounded-2xl bg-dark-800/40 border border-dark-700/50 hover:border-dark-600/50 transition-all overflow-hidden"
-          >
-            <div className="flex flex-col md:flex-row md:items-center gap-4 p-5">
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2.5 mb-1.5">
-                  <h3 className="text-base font-semibold text-white truncate">{contract.title}</h3>
-                  <span className={getStatusBadge(contract.status)}>{contract.status}</span>
-                </div>
-                <p className="text-sm text-dark-500">
-                  Freelancer: <span className="font-medium text-dark-400">{contract.freelancer}</span>
-                  <span className="mx-2 text-dark-700">•</span>
-                  Deadline: {new Date(contract.deadline).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
-                </p>
-              </div>
-
-              <div className="hidden lg:block w-36">
-                <div className="flex justify-between text-[11px] text-dark-500 mb-1">
-                  <span>Progress</span>
-                  <span className="font-semibold text-emerald-400">{contract.progress}%</span>
-                </div>
-                <div className="w-full bg-dark-700 rounded-full h-2">
-                  <div
-                    className={`h-2 rounded-full transition-all ${contract.status === 'Completed' ? 'bg-emerald-500' : contract.status === 'Disputed' ? 'bg-danger-400' : 'bg-primary-500'}`}
-                    style={{ width: `${contract.progress}%` }}
-                  />
-                </div>
-              </div>
-
-              <div className="flex items-center justify-between md:justify-end gap-4">
-                <p className="text-lg font-bold text-white">{contract.amount}</p>
-                <Link to={`/contract/${contract.id}`} className="flex items-center gap-1.5 text-sm font-semibold text-primary-400 bg-primary-500/10 hover:bg-primary-500/20 px-4 py-2 rounded-xl transition-colors border border-primary-500/20">
-                  <Eye size={15} /> View Details
-                </Link>
-              </div>
+      {loading ? (
+        <div className="flex items-center justify-center py-20">
+          <Loader2 size={32} className="animate-spin text-primary-400" />
+        </div>
+      ) : (
+        <div className="grid gap-4">
+          {filtered.length === 0 && (
+            <div className="text-center py-16">
+              <FileText size={48} className="mx-auto mb-4 text-dark-600" />
+              <h3 className="text-lg font-semibold text-dark-300 mb-2">No contracts yet</h3>
+              <p className="text-dark-500 text-sm mb-6">Create your first contract to get started.</p>
+              <Link to="/create-contract" className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-gradient-to-r from-primary-500 to-accent-500 text-white font-semibold">
+                <PlusCircle size={18} /> Create Contract
+              </Link>
             </div>
-          </motion.div>
-        ))}
-      </div>
+          )}
+          {filtered.map((contract, idx) => (
+            <motion.div
+              key={contract._id}
+              initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: idx * 0.06 }}
+              className="rounded-2xl bg-dark-800/40 border border-dark-700/50 hover:border-dark-600/50 transition-all overflow-hidden"
+            >
+              <div className="flex flex-col md:flex-row md:items-center gap-4 p-5">
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2.5 mb-1.5">
+                    <h3 className="text-base font-semibold text-white truncate">{contract.title}</h3>
+                    <span className={getStatusBadge(contract.status)}>{contract.status}</span>
+                  </div>
+                  <p className="text-sm text-dark-500">
+                    Freelancer: <span className="font-medium text-dark-400">{contract.partyB?.name || 'N/A'}</span>
+                    <span className="mx-2 text-dark-700">•</span>
+                    Deadline: {contract.deadline ? new Date(contract.deadline).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : 'N/A'}
+                  </p>
+                </div>
+
+                <div className="flex items-center justify-between md:justify-end gap-4">
+                  <p className="text-lg font-bold text-white">${contract.amount}</p>
+                  <Link to={`/contract/${contract._id}`} className="flex items-center gap-1.5 text-sm font-semibold text-primary-400 bg-primary-500/10 hover:bg-primary-500/20 px-4 py-2 rounded-xl transition-colors border border-primary-500/20">
+                    <Eye size={15} /> View Details
+                  </Link>
+                </div>
+              </div>
+            </motion.div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
