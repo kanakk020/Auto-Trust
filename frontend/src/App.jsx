@@ -17,6 +17,10 @@ import Contracts from './pages/Contracts';
 import CreateContract from './pages/CreateContract';
 import Payments from './pages/Payments';
 import Disputes from './pages/Disputes';
+import Messages from './pages/Messages';
+import Activity from './pages/Activity';
+import HelpSupport from './pages/HelpSupport';
+import Notifications from './pages/Notifications';
 
 // Freelancer Pages
 import FreelancerDashboard from './pages/FreelancerDashboard';
@@ -40,6 +44,10 @@ function App() {
           <Route path="/contract/:id" element={<ContractDetails />} />
           <Route path="/payments" element={<Payments />} />
           <Route path="/disputes" element={<Disputes />} />
+          <Route path="/messages" element={<Messages />} />
+          <Route path="/activity" element={<Activity />} />
+          <Route path="/help" element={<HelpSupport />} />
+          <Route path="/notifications" element={<Notifications />} />
           <Route path="/profile" element={<Profile />} />
         </Route>
 
@@ -50,6 +58,7 @@ function App() {
           <Route path="/freelancer/earnings" element={<FreelancerEarnings />} />
           <Route path="/freelancer/submissions" element={<FreelancerSubmissions />} />
           <Route path="/freelancer/disputes" element={<Disputes />} />
+          <Route path="/freelancer/help" element={<HelpSupport />} />
           <Route path="/freelancer/profile" element={<Profile />} />
         </Route>
       </Routes>

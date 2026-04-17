@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Outlet, Link, useLocation } from 'react-router-dom';
 import {
   LayoutDashboard, Briefcase, Wallet, Upload, AlertTriangle,
-  User, Bell, LogOut, Menu, X, Shield, Zap, Star
+  User, Bell, LogOut, Menu, X, Shield, Zap, Star, HelpCircle
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -12,7 +12,7 @@ const navItems = [
   { name: 'Earnings', path: '/freelancer/earnings', icon: Wallet },
   { name: 'Submissions', path: '/freelancer/submissions', icon: Upload },
   { name: 'Disputes', path: '/freelancer/disputes', icon: AlertTriangle },
-  { name: 'Profile', path: '/freelancer/profile', icon: User },
+  { name: 'Help & Support', path: '/freelancer/help', icon: HelpCircle },
 ];
 
 const Sidebar = ({ isOpen, setIsOpen }) => {
@@ -138,9 +138,9 @@ const Navbar = ({ setIsOpen }) => {
               New Freelancer
             </p>
           </div>
-          <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-emerald-500 to-primary-600 flex items-center justify-center text-white font-bold text-sm shadow-sm cursor-pointer hover:shadow-lg hover:shadow-emerald-500/20 transition-shadow">
+          <Link to="/freelancer/profile" className="h-10 w-10 rounded-xl bg-gradient-to-br from-emerald-500 to-primary-600 flex items-center justify-center text-white font-bold text-sm shadow-sm cursor-pointer hover:shadow-lg hover:shadow-emerald-500/20 transition-shadow">
             FL
-          </div>
+          </Link>
         </div>
       </div>
     </header>

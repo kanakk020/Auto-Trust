@@ -12,7 +12,7 @@ const mainNavItems = [
   { name: 'My Contracts', path: '/contracts', icon: FileText },
   { name: 'Create Contract', path: '/create-contract', icon: FilePlus, highlight: true },
   { name: 'Payments', path: '/payments', icon: Wallet },
-  { name: 'Messages', path: '/messages', icon: MessageSquare, badge: 3 },
+  { name: 'Messages', path: '/messages', icon: MessageSquare },
   { name: 'Disputes', path: '/disputes', icon: AlertTriangle, badge: 0 },
 ];
 
@@ -20,7 +20,6 @@ const secondaryNavItems = [
   { name: 'Notifications', path: '/notifications', icon: Bell },
   { name: 'Activity', path: '/activity', icon: History },
   { name: 'Help & Support', path: '/help', icon: HelpCircle },
-  { name: 'Profile', path: '/profile', icon: User },
 ];
 
 const Sidebar = ({ isOpen, setIsOpen }) => {
