@@ -1,22 +1,27 @@
 import React, { useState } from 'react';
-import { Outlet, Link, useLocation } from 'react-router-dom';
+import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
 import {
   LayoutDashboard, Briefcase, Wallet, Upload, AlertTriangle,
-  User, Bell, LogOut, Menu, X, Shield, Zap, Star, HelpCircle
+  User, Bell, LogOut, Menu, X, Shield, Zap, Star, HelpCircle,
+  MessageSquare
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useUser } from '../../context/UserContext';
 
 const navItems = [
   { name: 'Dashboard', path: '/freelancer', icon: LayoutDashboard },
   { name: 'My Work', path: '/freelancer/work', icon: Briefcase },
   { name: 'Earnings', path: '/freelancer/earnings', icon: Wallet },
   { name: 'Submissions', path: '/freelancer/submissions', icon: Upload },
+  { name: 'Messages', path: '/freelancer/messages', icon: MessageSquare },
   { name: 'Disputes', path: '/freelancer/disputes', icon: AlertTriangle },
   { name: 'Help & Support', path: '/freelancer/help', icon: HelpCircle },
 ];
 
 const Sidebar = ({ isOpen, setIsOpen }) => {
   const location = useLocation();
+  const { clearUser } = useUser();
+  const navTo = useNavigate();
 
   return (
     <>
@@ -101,10 +106,16 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
             </div>
           </div>
 
-          <Link to="/" className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-dark-500 hover:text-danger-400 hover:bg-dark-800/50 transition-all font-medium text-sm">
+          <button 
+            onClick={() => {
+              clearUser();
+              navTo('/');
+            }}
+            className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-dark-500 hover:text-danger-400 hover:bg-dark-800/50 transition-all font-medium text-sm w-full"
+          >
             <LogOut size={19} />
             Logout
-          </Link>
+          </button>
         </div>
       </div>
     </>
@@ -112,6 +123,12 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
 };
 
 const Navbar = ({ setIsOpen }) => {
+  const { user } = useUser();
+  const getInitials = () => {
+    if (!user.name) return 'FL';
+    return user.name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
+  };
+
   return (
     <header className="bg-dark-950/80 backdrop-blur-xl border-b border-dark-800/40 h-[68px] flex items-center justify-between px-4 sm:px-6 lg:px-8 z-10 sticky top-0">
       <div className="flex items-center gap-4 flex-1">
@@ -132,14 +149,18 @@ const Navbar = ({ setIsOpen }) => {
 
         <div className="flex items-center gap-3 ml-1 pl-3 border-l border-dark-800/40">
           <div className="hidden sm:block text-right">
-            <p className="text-sm font-semibold text-dark-100 leading-tight">Freelancer</p>
+            <p className="text-sm font-semibold text-dark-100 leading-tight">{user.name || 'Freelancer'}</p>
             <p className="text-[11px] text-dark-500 flex items-center justify-end gap-1">
               <span className="inline-block w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
-              New Freelancer
+              {user.phone ? 'Verified' : 'New Freelancer'}
             </p>
           </div>
-          <Link to="/freelancer/profile" className="h-10 w-10 rounded-xl bg-gradient-to-br from-emerald-500 to-primary-600 flex items-center justify-center text-white font-bold text-sm shadow-sm cursor-pointer hover:shadow-lg hover:shadow-emerald-500/20 transition-shadow">
-            FL
+          <Link to="/freelancer/profile" className="h-10 w-10 rounded-xl bg-gradient-to-br from-emerald-500 to-primary-600 flex items-center justify-center text-white font-bold text-sm shadow-sm cursor-pointer hover:shadow-lg hover:shadow-emerald-500/20 transition-shadow overflow-hidden">
+            {user.profileImage ? (
+              <img src={user.profileImage} alt="Profile" className="w-full h-full object-cover" />
+            ) : (
+              getInitials()
+            )}
           </Link>
         </div>
       </div>

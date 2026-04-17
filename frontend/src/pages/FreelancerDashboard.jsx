@@ -1,11 +1,11 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import {
   Wallet, Lock, Unlock, Clock, CheckCircle, IndianRupee, TrendingUp,
   ArrowUpRight, Briefcase, ChevronRight, Upload, ShieldCheck, Star,
   AlertTriangle, Zap, Eye, Timer, FileCheck, CircleCheck, Send,
-  XCircle, AlertCircle, Bot
+  XCircle, AlertCircle, Bot, ArrowLeft
 } from 'lucide-react';
 
 const fade = (d = 0) => ({
@@ -15,6 +15,7 @@ const fade = (d = 0) => ({
 });
 
 export default function FreelancerDashboard() {
+  const navigate = useNavigate();
   const earnings = [
     { label: 'Total Earnings', value: '₹0', icon: IndianRupee, gradient: 'from-emerald-500 to-emerald-600', change: '--', trend: 'up' },
     { label: 'Locked in Escrow', value: '₹0', icon: Lock, gradient: 'from-amber-500 to-orange-500', change: '--', trend: 'hold' },
@@ -36,6 +37,16 @@ export default function FreelancerDashboard() {
 
   return (
     <div className="max-w-[1400px] mx-auto space-y-8">
+
+      {/* Back Button */}
+      <motion.button
+        initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }}
+        onClick={() => navigate(-1)}
+        className="flex items-center gap-2 text-dark-400 hover:text-white transition-colors group"
+      >
+        <ArrowLeft size={18} className="group-hover:-translate-x-1 transition-transform" />
+        <span className="text-sm font-medium">Back</span>
+      </motion.button>
 
       {/* ─── HEADER ─── */}
       <motion.div {...fade(0)} className="flex flex-col md:flex-row md:items-end justify-between gap-4">

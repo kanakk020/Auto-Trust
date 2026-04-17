@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
-import { Outlet, Link, useLocation } from 'react-router-dom';
+import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
 import {
   LayoutDashboard, FileText, FilePlus, Wallet, AlertTriangle,
   User, Bell, LogOut, Menu, X, Search, Shield, Star,
   MessageSquare, History, HelpCircle, ChevronRight
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useUser } from '../../context/UserContext';
 
 const mainNavItems = [
   { name: 'Dashboard', path: '/dashboard', icon: LayoutDashboard },
@@ -24,6 +25,8 @@ const secondaryNavItems = [
 
 const Sidebar = ({ isOpen, setIsOpen }) => {
   const location = useLocation();
+  const { clearUser } = useUser();
+  const navTo = useNavigate();
 
   const isActive = (path) => {
     return location.pathname === path
@@ -146,10 +149,16 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
             </div>
           </div>
 
-          <Link to="/login" className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-dark-500 hover:text-danger-400 hover:bg-dark-800/50 transition-all font-medium text-sm">
+          <button 
+            onClick={() => {
+              clearUser();
+              navTo('/');
+            }}
+            className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-dark-500 hover:text-danger-400 hover:bg-dark-800/50 transition-all font-medium text-sm w-full"
+          >
             <LogOut size={19} />
             Logout
-          </Link>
+          </button>
         </div>
       </div>
     </>
@@ -157,6 +166,12 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
 };
 
 const Navbar = ({ setIsOpen }) => {
+  const { user } = useUser();
+  const getInitials = () => {
+    if (!user.name) return 'CL';
+    return user.name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
+  };
+
   return (
     <header className="bg-dark-950/80 backdrop-blur-xl border-b border-dark-800/40 h-[68px] flex items-center justify-between px-4 sm:px-6 lg:px-8 z-10 sticky top-0">
       <div className="flex items-center gap-4 flex-1">
@@ -189,14 +204,18 @@ const Navbar = ({ setIsOpen }) => {
 
         <div className="flex items-center gap-3 ml-1 pl-3 border-l border-dark-800/40">
           <div className="hidden sm:block text-right">
-            <p className="text-sm font-semibold text-dark-100 leading-tight">Client</p>
+            <p className="text-sm font-semibold text-dark-100 leading-tight">{user.name || 'Client'}</p>
             <p className="text-[11px] text-dark-500 flex items-center justify-end gap-1">
               <span className="inline-block w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
-              Verified
+              {user.phone ? 'Verified' : 'Not Verified'}
             </p>
           </div>
-          <Link to="/profile" className="h-10 w-10 rounded-xl bg-gradient-to-br from-primary-500 to-accent-600 flex items-center justify-center text-white font-bold text-sm shadow-sm cursor-pointer hover:shadow-lg hover:shadow-primary-500/20 transition-shadow">
-            CL
+          <Link to="/profile" className="h-10 w-10 rounded-xl bg-gradient-to-br from-primary-500 to-accent-600 flex items-center justify-center text-white font-bold text-sm shadow-sm cursor-pointer hover:shadow-lg hover:shadow-primary-500/20 transition-shadow overflow-hidden">
+            {user.profileImage ? (
+              <img src={user.profileImage} alt="Profile" className="w-full h-full object-cover" />
+            ) : (
+              getInitials()
+            )}
           </Link>
         </div>
       </div>

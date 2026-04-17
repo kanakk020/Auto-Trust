@@ -1,7 +1,8 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
-import { ShieldCheck, Mail, Lock, User, Briefcase, Search, ArrowRight, CheckCircle2, Phone, Fingerprint, Smartphone, RotateCcw, Sparkles, AlertCircle } from 'lucide-react';
+import { ShieldCheck, Mail, Lock, User, Briefcase, Search, ArrowRight, CheckCircle2, Phone, Fingerprint, Smartphone, RotateCcw, Sparkles, AlertCircle, Wallet, ArrowLeft } from 'lucide-react';
+import { useUser } from '../context/UserContext';
 
 export default function Login() {
   const [searchParams] = useSearchParams();
@@ -12,6 +13,7 @@ export default function Login() {
   const [step, setStep] = useState(isSignupMode ? 'role' : 'auth');
   const [role, setRole] = useState(null); // 'client' or 'freelancer'
   const navigate = useNavigate();
+  const { updateUser } = useUser();
 
   // OTP State
   const [otp, setOtp] = useState(['', '', '', '', '', '']);
@@ -73,9 +75,19 @@ export default function Login() {
     console.log(`[AutoTrust Demo] OTP sent to ${phone}: ${code}`);
   };
 
-  // Handle remaining details submit → go to dashboard
+  // Handle remaining details submit → save to context and go to dashboard
   const handleDetailsSubmit = (e) => {
     e.preventDefault();
+    const form = e.target;
+    updateUser({
+      name: form.fullName.value,
+      email: form.email.value,
+      aadhaar: form.aadhaar.value,
+      upiId: form.upiId.value,
+      phone: userPhone,
+      role: role,
+      memberSince: new Date().toISOString(),
+    });
     navigate(role === 'freelancer' ? '/freelancer' : '/dashboard');
   };
 
@@ -179,6 +191,16 @@ export default function Login() {
         initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}
         className="w-full max-w-xl z-10"
       >
+        {/* Back Button */}
+        <motion.button
+          initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }}
+          onClick={() => navigate('/')}
+          className="flex items-center gap-2 text-slate-400 hover:text-white transition-colors group mb-6"
+        >
+          <ArrowLeft size={18} className="group-hover:-translate-x-1 transition-transform" />
+          <span className="text-sm font-medium">Back</span>
+        </motion.button>
+
         <div className="text-center mb-8">
           <Link to="/" className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-indigo-500 to-blue-600 text-white mb-6 shadow-lg shadow-indigo-500/25 border border-indigo-400/30 hover:scale-105 transition-transform">
             <ShieldCheck size={32} />
@@ -519,7 +541,7 @@ export default function Login() {
                 <form onSubmit={handleDetailsSubmit} className="space-y-4">
                   <div className="relative">
                     <User className="absolute left-4 top-3.5 text-slate-500" size={20} />
-                    <input type="text" placeholder="Full Name" className="w-full pl-12 pr-4 py-3 bg-slate-900/50 border border-slate-700 text-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all placeholder:text-slate-600" required />
+                    <input type="text" name="fullName" placeholder="Full Name" className="w-full pl-12 pr-4 py-3 bg-slate-900/50 border border-slate-700 text-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all placeholder:text-slate-600" required />
                   </div>
 
                   <div className="relative">
@@ -529,9 +551,13 @@ export default function Login() {
 
                   <div className="relative">
                     <Fingerprint className="absolute left-4 top-3.5 text-slate-500" size={20} />
-                    <input type="text" placeholder="Aadhaar Card No. (xxxx xxxx xxxx)" pattern="[0-9]{12}" maxLength={12} className="w-full pl-12 pr-4 py-3 bg-slate-900/50 border border-slate-700 text-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all placeholder:text-slate-600" required />
+                    <input type="text" name="aadhaar" placeholder="Aadhaar Card No. (xxxx xxxx xxxx)" pattern="[0-9]{12}" maxLength={12} className="w-full pl-12 pr-4 py-3 bg-slate-900/50 border border-slate-700 text-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all placeholder:text-slate-600" required />
                   </div>
 
+                  <div className="relative">
+                    <Wallet className="absolute left-4 top-3.5 text-slate-500" size={20} />
+                    <input type="text" name="upiId" placeholder="UPI ID (e.g. name@upi)" className="w-full pl-12 pr-4 py-3 bg-slate-900/50 border border-slate-700 text-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all placeholder:text-slate-600" required />
+                  </div>
 
                   <div className="relative">
                     <Lock className="absolute left-4 top-3.5 text-slate-500" size={20} />

@@ -1,14 +1,15 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import {
   FileSignature, CheckCircle, Clock, ChevronRight, TrendingUp,
   PlusCircle, IndianRupee, ShieldCheck, Lock, Unlock, Eye,
   ArrowUpRight, AlertTriangle, Wallet, Zap,
   Award, Star, Send, Brain, Shield, Sparkles,
   Activity, CircleDot, FileText, Timer, CircleCheck,
-  MessageSquare, BarChart3, ArrowRight
+  MessageSquare, BarChart3, ArrowRight, ArrowLeft
 } from 'lucide-react';
+import { useUser } from '../context/UserContext';
 
 const fadeUp = (delay = 0) => ({
   initial: { opacity: 0, y: 20 },
@@ -24,6 +25,8 @@ const getGreeting = () => {
 };
 
 export default function Dashboard() {
+  const navigate = useNavigate();
+  const { user } = useUser();
   const stats = [
     { label: 'Active Contracts', value: '0', change: '--', trend: 'up', icon: FileSignature, gradient: 'from-primary-500 to-primary-600', glow: 'shadow-primary-500/20' },
     { label: 'Pending Payments', value: '₹0', change: '--', trend: 'neutral', icon: Clock, gradient: 'from-amber-500 to-orange-500', glow: 'shadow-amber-500/20' },
@@ -56,11 +59,21 @@ export default function Dashboard() {
   return (
     <div className="max-w-[1400px] mx-auto space-y-8">
 
+      {/* Back Button */}
+      <motion.button
+        initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }}
+        onClick={() => navigate(-1)}
+        className="flex items-center gap-2 text-dark-400 hover:text-white transition-colors group"
+      >
+        <ArrowLeft size={18} className="group-hover:-translate-x-1 transition-transform" />
+        <span className="text-sm font-medium">Back</span>
+      </motion.button>
+
       {/* ─── GREETING HEADER ─── */}
       <motion.div {...fadeUp(0)} className="flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold text-white">
-            {getGreeting()}, <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary-400 to-accent-400">User</span> 👋
+            {getGreeting()}, <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary-400 to-accent-400">{user.name || 'User'}</span> 👋
           </h1>
           <p className="text-dark-400 mt-1.5 flex items-center gap-2">
             <ShieldCheck size={16} className="text-primary-500" />

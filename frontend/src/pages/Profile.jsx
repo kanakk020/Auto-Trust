@@ -1,13 +1,62 @@
-import React from 'react';
-import { motion } from 'framer-motion';
-import { Award, Star, Mail, Calendar, CheckCircle, FileText, PlusCircle, Phone, CreditCard, Shield, ArrowLeft, User, MapPin } from 'lucide-react';
+import React, { useState, useRef } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Award, Star, Mail, Calendar, CheckCircle, FileText, PlusCircle, Phone, CreditCard, Shield, ArrowLeft, User, MapPin, Edit3, Save, X, Wallet, Camera } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
+import { useUser } from '../context/UserContext';
 
 export default function Profile() {
   const navigate = useNavigate();
+  const { user, updateUser } = useUser();
+  const [isEditing, setIsEditing] = useState(false);
+  const [editData, setEditData] = useState({ ...user });
   const trustScore = 0;
   const contracts = [];
   const isHighTrust = trustScore >= 80;
+
+  const handleEdit = () => {
+    setEditData({ ...user });
+    setIsEditing(true);
+  };
+
+  const handleSave = () => {
+    updateUser(editData);
+    setIsEditing(false);
+  };
+
+  const handleCancel = () => {
+    setEditData({ ...user });
+    setIsEditing(false);
+  };
+
+  const handleChange = (field, value) => {
+    setEditData(prev => ({ ...prev, [field]: value }));
+  };
+
+  const getInitials = () => {
+    if (!user.name) return 'U';
+    return user.name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
+  };
+
+  const maskAadhaar = (val) => {
+    if (!val) return 'Not provided';
+    return 'XXXX XXXX ' + val.slice(-4);
+  };
+
+  const fileInputRef = useRef(null);
+
+  const handleImageUpload = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    if (file.size > 2 * 1024 * 1024) {
+      alert('Image must be less than 2MB');
+      return;
+    }
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      updateUser({ profileImage: reader.result });
+    };
+    reader.readAsDataURL(file);
+  };
 
   return (
     <div className="max-w-5xl mx-auto">
@@ -29,19 +78,73 @@ export default function Profile() {
         </div>
         <div className="px-8 pb-8">
           <div className="flex flex-col sm:flex-row items-center sm:items-end gap-6 -mt-16 relative">
-            <div className="w-32 h-32 rounded-3xl border-4 border-dark-800 shadow-lg bg-dark-700 flex items-center justify-center text-dark-400">
-              <User size={48} strokeWidth={1.5} />
+            {/* Avatar with image upload */}
+            <div className="relative group">
+              <div className="w-32 h-32 rounded-3xl border-4 border-dark-800 shadow-lg overflow-hidden bg-gradient-to-br from-primary-500 to-accent-500 flex items-center justify-center text-white text-3xl font-bold">
+                {user.profileImage ? (
+                  <img src={user.profileImage} alt="Profile" className="w-full h-full object-cover" />
+                ) : (
+                  getInitials()
+                )}
+              </div>
+              <button
+                onClick={() => fileInputRef.current?.click()}
+                className="absolute inset-0 rounded-3xl bg-black/0 group-hover:bg-black/40 flex items-center justify-center transition-all duration-200 cursor-pointer"
+              >
+                <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex flex-col items-center gap-1">
+                  <Camera size={24} className="text-white drop-shadow-lg" />
+                  <span className="text-[10px] font-semibold text-white drop-shadow-lg">Change Photo</span>
+                </div>
+              </button>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                onChange={handleImageUpload}
+                className="hidden"
+              />
+              {/* Small camera badge */}
+              <div className="absolute -bottom-1 -right-1 w-8 h-8 rounded-full bg-primary-500 border-2 border-dark-800 flex items-center justify-center shadow-lg cursor-pointer hover:bg-primary-400 transition-colors" onClick={() => fileInputRef.current?.click()}>
+                <Camera size={14} className="text-white" />
+              </div>
             </div>
             <div className="flex-1 text-center sm:text-left mb-2">
               <h1 className="text-3xl font-bold text-white flex items-center justify-center sm:justify-start gap-2">
-                Your Profile
+                {user.name || 'Your Profile'}
               </h1>
               <p className="text-dark-400 mt-1 flex items-center justify-center sm:justify-start gap-1">
-                <Mail size={16} /> Complete your profile to get started
+                <Mail size={16} /> {user.email || 'Complete your profile to get started'}
               </p>
+              {user.role && (
+                <span className="inline-flex items-center gap-1.5 mt-2 text-xs font-bold uppercase tracking-wider px-3 py-1 rounded-full bg-primary-500/15 text-primary-400 border border-primary-500/20">
+                  {user.role === 'freelancer' ? '⚡ Freelancer' : '🔍 Client'}
+                </span>
+              )}
             </div>
             <div className="flex gap-3 mb-2 w-full sm:w-auto">
-              <button className="flex-1 sm:flex-none px-5 py-2.5 rounded-xl bg-gradient-to-r from-primary-500 to-accent-500 text-white font-semibold text-sm shadow-lg shadow-primary-500/20 hover:shadow-primary-500/30 transition-all active:scale-95">Edit Profile</button>
+              {isEditing ? (
+                <>
+                  <button 
+                    onClick={handleSave}
+                    className="flex-1 sm:flex-none px-5 py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-600 text-white font-semibold text-sm shadow-lg shadow-emerald-500/20 hover:shadow-emerald-500/30 transition-all active:scale-95 flex items-center gap-2 justify-center"
+                  >
+                    <Save size={16} /> Save
+                  </button>
+                  <button 
+                    onClick={handleCancel}
+                    className="flex-1 sm:flex-none px-5 py-2.5 rounded-xl border border-dark-600 text-dark-300 font-semibold text-sm hover:bg-dark-800/50 transition-all active:scale-95 flex items-center gap-2 justify-center"
+                  >
+                    <X size={16} /> Cancel
+                  </button>
+                </>
+              ) : (
+                <button 
+                  onClick={handleEdit}
+                  className="flex-1 sm:flex-none px-5 py-2.5 rounded-xl bg-gradient-to-r from-primary-500 to-accent-500 text-white font-semibold text-sm shadow-lg shadow-primary-500/20 hover:shadow-primary-500/30 transition-all active:scale-95 flex items-center gap-2 justify-center"
+                >
+                  <Edit3 size={16} /> Edit Profile
+                </button>
+              )}
             </div>
           </div>
         </div>
@@ -88,7 +191,9 @@ export default function Profile() {
             </div>
             <div className="flex justify-between items-center text-sm">
               <span className="text-dark-400 flex items-center gap-2"><Calendar size={16} /> Member Since</span>
-              <span className="font-bold text-white">—</span>
+              <span className="font-bold text-white">
+                {user.memberSince ? new Date(user.memberSince).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : '—'}
+              </span>
             </div>
           </div>
         </div>
@@ -103,35 +208,92 @@ export default function Profile() {
             </div>
 
             <div className="space-y-5">
+              {/* Full Name */}
+              <div>
+                <label className="text-xs font-semibold text-dark-500 uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                  <User size={13} /> Full Name
+                </label>
+                {isEditing ? (
+                  <input
+                    type="text"
+                    value={editData.name}
+                    onChange={(e) => handleChange('name', e.target.value)}
+                    className="w-full px-4 py-3 rounded-xl bg-dark-900/50 border border-primary-500/30 text-white text-sm font-medium outline-none focus:ring-2 focus:ring-primary-500/30 transition-all"
+                    placeholder="Enter your full name"
+                  />
+                ) : (
+                  <div className="px-4 py-3 rounded-xl bg-dark-900/50 border border-dark-700/30 text-dark-300 text-sm font-medium">
+                    {user.name || 'Not provided'}
+                  </div>
+                )}
+              </div>
+
+              {/* Email */}
+              <div>
+                <label className="text-xs font-semibold text-dark-500 uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                  <Mail size={13} /> Email Address
+                </label>
+                {isEditing ? (
+                  <input
+                    type="email"
+                    value={editData.email}
+                    onChange={(e) => handleChange('email', e.target.value)}
+                    className="w-full px-4 py-3 rounded-xl bg-dark-900/50 border border-primary-500/30 text-white text-sm font-medium outline-none focus:ring-2 focus:ring-primary-500/30 transition-all"
+                    placeholder="Enter your email"
+                  />
+                ) : (
+                  <div className="px-4 py-3 rounded-xl bg-dark-900/50 border border-dark-700/30 text-dark-300 text-sm font-medium">
+                    {user.email || 'Not provided'}
+                  </div>
+                )}
+              </div>
+
               {/* Phone Number */}
               <div>
                 <label className="text-xs font-semibold text-dark-500 uppercase tracking-wider mb-2 flex items-center gap-1.5">
                   <Phone size={13} /> Phone Number
                 </label>
-                <div className="flex items-center gap-3">
-                  <div className="flex-1 px-4 py-3 rounded-xl bg-dark-900/50 border border-dark-700/30 text-dark-300 text-sm font-medium">
-                    Not provided
+                {isEditing ? (
+                  <input
+                    type="tel"
+                    value={editData.phone}
+                    onChange={(e) => handleChange('phone', e.target.value)}
+                    maxLength={10}
+                    className="w-full px-4 py-3 rounded-xl bg-dark-900/50 border border-primary-500/30 text-white text-sm font-medium outline-none focus:ring-2 focus:ring-primary-500/30 transition-all"
+                    placeholder="Enter 10-digit mobile number"
+                  />
+                ) : (
+                  <div className="flex items-center gap-3">
+                    <div className="flex-1 px-4 py-3 rounded-xl bg-dark-900/50 border border-dark-700/30 text-dark-300 text-sm font-medium">
+                      {user.phone ? `+91 ${user.phone}` : 'Not provided'}
+                    </div>
+                    {user.phone && (
+                      <span className="px-3 py-1.5 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-bold">
+                        Verified
+                      </span>
+                    )}
                   </div>
-                  <button className="px-4 py-3 rounded-xl border border-primary-500/20 text-primary-400 text-sm font-semibold hover:bg-primary-500/10 transition-colors">
-                    Add
-                  </button>
-                </div>
+                )}
               </div>
 
-              {/* PAN Card */}
+              {/* UPI ID */}
               <div>
                 <label className="text-xs font-semibold text-dark-500 uppercase tracking-wider mb-2 flex items-center gap-1.5">
-                  <CreditCard size={13} /> PAN Card Number
+                  <Wallet size={13} /> UPI ID
                 </label>
-                <div className="flex items-center gap-3">
-                  <div className="flex-1 px-4 py-3 rounded-xl bg-dark-900/50 border border-dark-700/30 text-dark-300 text-sm font-medium">
-                    Not provided
+                {isEditing ? (
+                  <input
+                    type="text"
+                    value={editData.upiId}
+                    onChange={(e) => handleChange('upiId', e.target.value)}
+                    className="w-full px-4 py-3 rounded-xl bg-dark-900/50 border border-primary-500/30 text-white text-sm font-medium outline-none focus:ring-2 focus:ring-primary-500/30 transition-all"
+                    placeholder="e.g. name@upi"
+                  />
+                ) : (
+                  <div className="px-4 py-3 rounded-xl bg-dark-900/50 border border-dark-700/30 text-dark-300 text-sm font-medium">
+                    {user.upiId || 'Not provided'}
                   </div>
-                  <button className="px-4 py-3 rounded-xl border border-primary-500/20 text-primary-400 text-sm font-semibold hover:bg-primary-500/10 transition-colors">
-                    Add
-                  </button>
-                </div>
-                <p className="text-[11px] text-dark-600 mt-1.5 ml-1">Format: ABCDE1234F</p>
+                )}
               </div>
 
               {/* Aadhaar Card */}
@@ -139,28 +301,46 @@ export default function Profile() {
                 <label className="text-xs font-semibold text-dark-500 uppercase tracking-wider mb-2 flex items-center gap-1.5">
                   <Shield size={13} /> Aadhaar Card Number
                 </label>
-                <div className="flex items-center gap-3">
-                  <div className="flex-1 px-4 py-3 rounded-xl bg-dark-900/50 border border-dark-700/30 text-dark-300 text-sm font-medium">
-                    Not provided
+                {isEditing ? (
+                  <input
+                    type="text"
+                    value={editData.aadhaar}
+                    onChange={(e) => handleChange('aadhaar', e.target.value)}
+                    maxLength={12}
+                    className="w-full px-4 py-3 rounded-xl bg-dark-900/50 border border-primary-500/30 text-white text-sm font-medium outline-none focus:ring-2 focus:ring-primary-500/30 transition-all"
+                    placeholder="12-digit Aadhaar number"
+                  />
+                ) : (
+                  <div className="px-4 py-3 rounded-xl bg-dark-900/50 border border-dark-700/30 text-dark-300 text-sm font-medium">
+                    {maskAadhaar(user.aadhaar)}
                   </div>
-                  <button className="px-4 py-3 rounded-xl border border-primary-500/20 text-primary-400 text-sm font-semibold hover:bg-primary-500/10 transition-colors">
-                    Add
-                  </button>
-                </div>
+                )}
                 <p className="text-[11px] text-dark-600 mt-1.5 ml-1">12-digit Aadhaar number</p>
               </div>
             </div>
 
             {/* KYC Status Banner */}
-            <div className="mt-6 p-4 rounded-xl bg-amber-500/10 border border-amber-500/20">
-              <div className="flex items-start gap-3">
-                <Shield size={18} className="text-amber-400 mt-0.5 shrink-0" />
-                <div>
-                  <p className="text-sm font-semibold text-amber-300">KYC Incomplete</p>
-                  <p className="text-xs text-amber-400/70 mt-0.5">Complete your KYC verification to unlock higher transaction limits and build trust.</p>
+            {(!user.phone || !user.aadhaar || !user.name) ? (
+              <div className="mt-6 p-4 rounded-xl bg-amber-500/10 border border-amber-500/20">
+                <div className="flex items-start gap-3">
+                  <Shield size={18} className="text-amber-400 mt-0.5 shrink-0" />
+                  <div>
+                    <p className="text-sm font-semibold text-amber-300">KYC Incomplete</p>
+                    <p className="text-xs text-amber-400/70 mt-0.5">Complete your KYC verification to unlock higher transaction limits and build trust.</p>
+                  </div>
                 </div>
               </div>
-            </div>
+            ) : (
+              <div className="mt-6 p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/20">
+                <div className="flex items-start gap-3">
+                  <CheckCircle size={18} className="text-emerald-400 mt-0.5 shrink-0" />
+                  <div>
+                    <p className="text-sm font-semibold text-emerald-300">KYC Complete</p>
+                    <p className="text-xs text-emerald-400/70 mt-0.5">Your identity has been verified. You have access to all platform features.</p>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Contract History */}

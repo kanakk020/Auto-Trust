@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { Calendar, DollarSign, User, FileText, Pickaxe, Send } from 'lucide-react';
+import { Calendar, DollarSign, User, FileText, Pickaxe, Send, ArrowLeft } from 'lucide-react';
 
 export default function CreateContract() {
   const navigate = useNavigate();
@@ -20,7 +20,17 @@ export default function CreateContract() {
   };
 
   return (
-    <div className="max-w-3xl mx-auto">
+    <div className="max-w-3xl mx-auto space-y-6">
+      {/* Back Button */}
+      <motion.button
+        initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }}
+        onClick={() => navigate(-1)}
+        className="flex items-center gap-2 text-dark-400 hover:text-white transition-colors group"
+      >
+        <ArrowLeft size={18} className="group-hover:-translate-x-1 transition-transform" />
+        <span className="text-sm font-medium">Back</span>
+      </motion.button>
+
       <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} className="mb-8">
         <h1 className="text-3xl font-bold text-slate-900">Create New Contract</h1>
         <p className="text-slate-500 mt-1">Setup the terms and conditions for your next agreement.</p>
