@@ -1,16 +1,27 @@
-# React + Vite
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+## 🧠 Problem
 
-Currently, two official plugins are available:
+Small transactions like freelancing, renting, or lending often happen through chats or verbal agreements.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+* No proper proof
+* No payment security
+* High chances of scams
+* Frequent disputes
 
-## React Compiler
+Trust is assumed, but not guaranteed.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+---
 
-## Expanding the ESLint configuration
+## 💡 Solution
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+**AutoTrust** replaces human trust with a system-driven approach:
+
+* AI-generated contracts from simple terms
+* Digital signatures for secure agreements
+* Escrow payments to lock money safely
+* Proof collection (files, timestamps, activity)
+* AI verification of work completion
+* Dispute resolution with AI + panel
+* Blockchain storage for tamper-proof records
+
+**Result:** Secure, transparent, and scam-proof transactions.
