@@ -15,6 +15,7 @@ import Profile from './pages/Profile';
 import Dashboard from './pages/Dashboard';
 import Contracts from './pages/Contracts';
 import CreateContract from './pages/CreateContract';
+import ServiceAgreement from './pages/ServiceAgreement';
 import Payments from './pages/Payments';
 import Disputes from './pages/Disputes';
 import Messages from './pages/Messages';
@@ -41,6 +42,7 @@ function App() {
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/contracts" element={<Contracts />} />
           <Route path="/create-contract" element={<CreateContract />} />
+          <Route path="/service-agreement" element={<ServiceAgreement />} />
           <Route path="/contract/:id" element={<ContractDetails />} />
           <Route path="/payments" element={<Payments />} />
           <Route path="/disputes" element={<Disputes />} />
@@ -57,6 +59,7 @@ function App() {
           <Route path="/freelancer/work" element={<MyWork />} />
           <Route path="/freelancer/earnings" element={<FreelancerEarnings />} />
           <Route path="/freelancer/submissions" element={<FreelancerSubmissions />} />
+          <Route path="/freelancer/service-agreement" element={<ServiceAgreement />} />
           <Route path="/freelancer/messages" element={<Messages />} />
           <Route path="/freelancer/disputes" element={<Disputes />} />
           <Route path="/freelancer/help" element={<HelpSupport />} />
