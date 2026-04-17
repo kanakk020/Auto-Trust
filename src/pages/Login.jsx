@@ -14,7 +14,7 @@ export default function Login() {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    navigate('/dashboard');
+    navigate(role === 'freelancer' ? '/freelancer' : '/dashboard');
   };
 
   return (

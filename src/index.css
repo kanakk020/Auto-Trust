@@ -10,30 +10,70 @@
 
 @layer components {
   .btn-primary {
-    @apply bg-primary-500 hover:bg-primary-600 text-white px-6 py-2 rounded-xl transition-all shadow-soft hover:shadow-soft-lg font-medium tracking-wide active:scale-95 disabled:opacity-50 disabled:pointer-events-none;
+    @apply bg-gradient-to-r from-primary-500 to-primary-600 hover:from-primary-600 hover:to-primary-700 text-white px-6 py-2.5 rounded-xl transition-all shadow-soft hover:shadow-glow font-semibold tracking-wide active:scale-95 disabled:opacity-50 disabled:pointer-events-none;
   }
-  
+
   .btn-secondary {
-    @apply bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 px-6 py-2 rounded-xl transition-all shadow-sm hover:shadow-soft font-medium active:scale-95;
+    @apply bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 px-6 py-2.5 rounded-xl transition-all shadow-sm hover:shadow-soft font-medium active:scale-95;
+  }
+
+  .btn-accent {
+    @apply bg-gradient-to-r from-accent-500 to-primary-500 hover:from-accent-600 hover:to-primary-600 text-white px-6 py-2.5 rounded-xl transition-all shadow-soft hover:shadow-glow-purple font-semibold tracking-wide active:scale-95;
   }
 
   .card {
-    @apply bg-white rounded-2xl p-6 shadow-soft border border-slate-100;
+    @apply bg-white rounded-2xl p-6 shadow-soft border border-slate-100 transition-all duration-300;
   }
-  
+
+  .card-hover {
+    @apply bg-white rounded-2xl p-6 shadow-soft border border-slate-100 transition-all duration-300 hover:shadow-soft-lg hover:-translate-y-1;
+  }
+
+  .card-glass {
+    @apply bg-white/70 backdrop-blur-xl rounded-2xl p-6 shadow-glass border border-white/50 transition-all duration-300;
+  }
+
   .input-field {
     @apply w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:border-primary-500 focus:ring-2 focus:ring-primary-100 transition-all outline-none;
   }
 
   .badge-success {
-    @apply bg-success-100 text-success-700 px-3 py-1 rounded-full text-sm font-medium border border-success-200;
+    @apply bg-success-100 text-success-700 px-3 py-1 rounded-full text-xs font-semibold border border-success-200;
   }
-  
+
   .badge-warning {
-    @apply bg-amber-100 text-amber-700 px-3 py-1 rounded-full text-sm font-medium border border-amber-200;
+    @apply bg-warning-100 text-warning-700 px-3 py-1 rounded-full text-xs font-semibold border border-warning-200;
   }
-  
+
   .badge-primary {
-    @apply bg-primary-100 text-primary-700 px-3 py-1 rounded-full text-sm font-medium border border-primary-200;
+    @apply bg-primary-100 text-primary-700 px-3 py-1 rounded-full text-xs font-semibold border border-primary-200;
+  }
+
+  .badge-danger {
+    @apply bg-danger-100 text-danger-700 px-3 py-1 rounded-full text-xs font-semibold border border-danger-200;
+  }
+
+  .badge-neutral {
+    @apply bg-slate-100 text-slate-600 px-3 py-1 rounded-full text-xs font-semibold border border-slate-200;
+  }
+
+  .stat-card {
+    @apply bg-white rounded-2xl p-6 shadow-soft border border-slate-100 transition-all duration-300 hover:shadow-soft-lg hover:-translate-y-1 cursor-default;
+  }
+
+  .gradient-text {
+    @apply text-transparent bg-clip-text bg-gradient-to-r from-primary-600 via-accent-500 to-primary-500;
+  }
+
+  .sidebar-link {
+    @apply flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium transition-all duration-200 text-sm;
+  }
+
+  .sidebar-link-active {
+    @apply bg-gradient-to-r from-primary-50 to-accent-50 text-primary-700 shadow-sm border border-primary-100/50;
+  }
+
+  .sidebar-link-inactive {
+    @apply text-slate-500 hover:bg-slate-50 hover:text-slate-800;
   }
 }

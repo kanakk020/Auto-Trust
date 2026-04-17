@@ -1,25 +1,56 @@
 import React from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
+
+// Layouts
 import AppLayout from './components/layout/AppLayout';
+import FreelancerLayout from './components/layout/FreelancerLayout';
+
+// Shared Pages
+import Landing from './pages/Landing';
 import Login from './pages/Login';
-import Dashboard from './pages/Dashboard';
-import CreateContract from './pages/CreateContract';
 import ContractDetails from './pages/ContractDetails';
 import Profile from './pages/Profile';
-import Landing from './pages/Landing';
+
+// Client Pages
+import Dashboard from './pages/Dashboard';
+import Contracts from './pages/Contracts';
+import CreateContract from './pages/CreateContract';
+import Payments from './pages/Payments';
+import Disputes from './pages/Disputes';
+
+// Freelancer Pages
+import FreelancerDashboard from './pages/FreelancerDashboard';
+import MyWork from './pages/MyWork';
+import FreelancerEarnings from './pages/FreelancerEarnings';
+import FreelancerSubmissions from './pages/FreelancerSubmissions';
 
 function App() {
   return (
     <BrowserRouter>
       <Routes>
+        {/* Public */}
         <Route path="/" element={<Landing />} />
         <Route path="/login" element={<Login />} />
-        
+
+        {/* Client Dashboard */}
         <Route element={<AppLayout />}>
           <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/contracts" element={<Contracts />} />
           <Route path="/create-contract" element={<CreateContract />} />
           <Route path="/contract/:id" element={<ContractDetails />} />
+          <Route path="/payments" element={<Payments />} />
+          <Route path="/disputes" element={<Disputes />} />
           <Route path="/profile" element={<Profile />} />
+        </Route>
+
+        {/* Freelancer Dashboard */}
+        <Route element={<FreelancerLayout />}>
+          <Route path="/freelancer" element={<FreelancerDashboard />} />
+          <Route path="/freelancer/work" element={<MyWork />} />
+          <Route path="/freelancer/earnings" element={<FreelancerEarnings />} />
+          <Route path="/freelancer/submissions" element={<FreelancerSubmissions />} />
+          <Route path="/freelancer/disputes" element={<Disputes />} />
+          <Route path="/freelancer/profile" element={<Profile />} />
         </Route>
       </Routes>
     </BrowserRouter>

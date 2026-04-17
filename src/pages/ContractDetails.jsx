@@ -1,21 +1,44 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { mockContracts, currentUser, mockMessages } from '../lib/mockData';
-import { ArrowLeft, CheckCircle2, FileCheck, Info, MessageSquare, Clock, ArrowRight, ShieldCheck, Check, Send } from 'lucide-react';
+import { ArrowLeft, CheckCircle2, FileCheck, Info, MessageSquare, Clock, ArrowRight, ShieldCheck, Check, Send, FileX } from 'lucide-react';
 
 export default function ContractDetails() {
   const { id } = useParams();
   const [contract, setContract] = useState(null);
+  const [messages, setMessages] = useState([]);
   const [activeTab, setActiveTab] = useState('details');
 
   useEffect(() => {
-    // Simulate API fetch
-    const found = mockContracts.find(c => c.id === id);
-    if (found) setContract(found);
+    // TODO: Replace with real API call
+    // For now, no contract data is available
+    setContract(null);
+    setMessages([]);
   }, [id]);
 
-  if (!contract) return <div className="p-8 text-center bg-slate-50 min-h-full">Loading...</div>;
+  if (!contract) return (
+    <div className="max-w-5xl mx-auto pb-10">
+      <div className="flex items-center gap-4 mb-6">
+        <Link to="/dashboard" className="p-2 rounded-full hover:bg-slate-200 text-slate-500 transition-colors">
+          <ArrowLeft size={20} />
+        </Link>
+        <div>
+          <h1 className="text-2xl font-bold text-slate-900">Contract Details</h1>
+          <p className="text-sm text-slate-500">ID: {id}</p>
+        </div>
+      </div>
+      <div className="card p-10 text-center">
+        <div className="w-16 h-16 bg-slate-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
+          <FileX size={28} className="text-slate-400" />
+        </div>
+        <h3 className="text-lg font-semibold text-slate-700 mb-2">Contract not found</h3>
+        <p className="text-sm text-slate-500 mb-6">This contract doesn't exist or hasn't been loaded yet.</p>
+        <Link to="/dashboard" className="btn-primary inline-flex items-center gap-2">
+          <ArrowLeft size={18} /> Back to Dashboard
+        </Link>
+      </div>
+    </div>
+  );
 
   const steps = [
     { num: 1, title: 'Created', desc: 'Contract drafted' },
@@ -38,7 +61,6 @@ export default function ContractDetails() {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 space-y-6">
-          {/* Progress Tracker */}
           <div className="card">
             <h3 className="text-lg font-bold text-slate-900 mb-6">Agreement Status</h3>
             <div className="relative">
@@ -69,7 +91,6 @@ export default function ContractDetails() {
             </div>
           </div>
 
-          {/* Main Content Tabs */}
           <div className="card p-0 overflow-hidden">
             <div className="flex border-b border-slate-100 bg-slate-50/50">
               <button 
@@ -95,7 +116,6 @@ export default function ContractDetails() {
                       <div className="flex-1 bg-slate-50 p-4 rounded-xl border border-slate-100">
                         <p className="text-xs text-slate-500 mb-1">Party A</p>
                         <p className="font-semibold">{contract.partyA}</p>
-                        {contract.partyA === currentUser.name && <span className="inline-block mt-2 px-2 py-0.5 bg-primary-100 text-primary-700 text-xs rounded font-medium">You</span>}
                       </div>
                       <div className="flex items-center justify-center text-slate-300">
                         <ArrowRight />
@@ -103,7 +123,6 @@ export default function ContractDetails() {
                       <div className="flex-1 bg-slate-50 p-4 rounded-xl border border-slate-100">
                         <p className="text-xs text-slate-500 mb-1">Party B</p>
                         <p className="font-semibold">{contract.partyB}</p>
-                        {contract.partyB === currentUser.name && <span className="inline-block mt-2 px-2 py-0.5 bg-primary-100 text-primary-700 text-xs rounded font-medium">You</span>}
                       </div>
                     </div>
                   </div>
@@ -117,12 +136,11 @@ export default function ContractDetails() {
                       <p>4. Funds are held in AutoTrust escrow until both parties confirm completion.</p>
                     </div>
                   </div>
-
                 </motion.div>
               ) : (
                 <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex flex-col h-full h-[400px]">
                   <div className="flex-1 overflow-y-auto space-y-4 pb-4 pr-2">
-                    {mockMessages.map(msg => (
+                    {messages.length > 0 ? messages.map(msg => (
                       <div key={msg.id} className={`flex ${msg.isMe ? 'justify-end' : 'justify-start'}`}>
                         <div className={`max-w-[75%] rounded-2xl p-3 ${msg.isMe ? 'bg-primary-500 text-white rounded-tr-sm' : 'bg-slate-100 text-slate-800 rounded-tl-sm'}`}>
                           {!msg.isMe && <p className="text-xs font-semibold mb-1 opacity-70">{msg.sender}</p>}
@@ -130,7 +148,14 @@ export default function ContractDetails() {
                           <p className={`text-[10px] mt-1 text-right ${msg.isMe ? 'text-primary-100' : 'text-slate-400'}`}>{msg.timestamp}</p>
                         </div>
                       </div>
-                    ))}
+                    )) : (
+                      <div className="flex items-center justify-center h-full text-slate-400 text-sm">
+                        <div className="text-center">
+                          <MessageSquare size={32} className="mx-auto mb-3 opacity-50" />
+                          <p>No messages yet. Start a conversation!</p>
+                        </div>
+                      </div>
+                    )}
                   </div>
                   <div className="mt-auto pt-4 border-t border-slate-100 flex gap-2">
                     <input type="text" placeholder="Type a message..." className="input-field py-2 flex-1" />
@@ -144,7 +169,6 @@ export default function ContractDetails() {
           </div>
         </div>
 
-        {/* Sidebar Actions */}
         <div className="space-y-6">
           <div className="card bg-slate-900 text-white border-0">
             <h3 className="font-semibold text-slate-400 mb-1">Contract Amount</h3>

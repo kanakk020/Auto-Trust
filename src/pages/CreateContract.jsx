@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { currentUser } from '../lib/mockData';
 import { Calendar, DollarSign, User, FileText, Pickaxe, Send } from 'lucide-react';
 
 export default function CreateContract() {
@@ -37,7 +36,8 @@ export default function CreateContract() {
                 <User className="absolute left-4 top-3.5 text-slate-400" size={18} />
                 <input 
                   type="text" 
-                  value={currentUser.name} 
+                  value="" 
+                  placeholder="Your name (auto-filled on login)"
                   disabled 
                   className="input-field pl-11 bg-slate-100 text-slate-500 font-medium"
                 />
