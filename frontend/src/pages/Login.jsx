@@ -24,6 +24,7 @@ export default function Login() {
   const [canResend, setCanResend] = useState(false);
   const [userPhone, setUserPhone] = useState('');
   const [phoneError, setPhoneError] = useState('');
+  const [authError, setAuthError] = useState('');
   const inputRefs = useRef([]);
 
   // Generate a random 6-digit OTP
@@ -55,9 +56,29 @@ export default function Login() {
   }, [step, resendTimer, canResend]);
 
   // Handle Sign In submit
-  const handleLoginSubmit = (e) => {
+  const handleLoginSubmit = async (e) => {
     e.preventDefault();
-    navigate('/dashboard');
+    const email = e.target.email.value;
+    const password = e.target.password.value;
+
+    try {
+      setAuthError('');
+      const res = await fetch('http://localhost:5000/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        updateUser(data);
+        localStorage.setItem('token', data.token);
+        navigate(data.role === 'freelancer' ? '/freelancer' : '/dashboard');
+      } else {
+        setAuthError(data.message || 'Login failed. Please check your credentials.');
+      }
+    } catch (err) {
+      setAuthError('Connection error. Server may be down.');
+    }
   };
 
   // Handle Phone number submit → go to OTP
@@ -76,19 +97,42 @@ export default function Login() {
   };
 
   // Handle remaining details submit → save to context and go to dashboard
-  const handleDetailsSubmit = (e) => {
+  const handleDetailsSubmit = async (e) => {
     e.preventDefault();
     const form = e.target;
-    updateUser({
+    
+    const requestData = {
       name: form.fullName.value,
       email: form.email.value,
+      password: form.password.value,
       aadhaar: form.aadhaar.value,
       upiId: form.upiId.value,
       phone: userPhone,
-      role: role,
-      memberSince: new Date().toISOString(),
-    });
-    navigate(role === 'freelancer' ? '/freelancer' : '/dashboard');
+      role: role
+    };
+
+    try {
+      setAuthError('');
+      const res = await fetch('http://localhost:5000/api/auth/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(requestData),
+      });
+      const data = await res.json();
+      
+      if (res.ok) {
+        updateUser({
+          ...data,
+          memberSince: new Date().toISOString(),
+        });
+        localStorage.setItem('token', data.token);
+        navigate(role === 'freelancer' ? '/freelancer' : '/dashboard');
+      } else {
+        setAuthError(data.message || 'Registration failed. Please try again.');
+      }
+    } catch (err) {
+      setAuthError('Connection error. Server may be down.');
+    }
   };
 
   // Handle OTP input change with auto-focus
@@ -539,6 +583,21 @@ export default function Login() {
                 </div>
 
                 <form onSubmit={handleDetailsSubmit} className="space-y-4">
+                  {/* Auth Error Display */}
+                  <AnimatePresence>
+                    {authError && (
+                      <motion.div
+                        initial={{ opacity: 0, y: -10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -10 }}
+                        className="bg-red-500/10 border border-red-500/20 text-red-400 p-3.5 rounded-xl flex items-center gap-3 text-sm shadow-lg shadow-red-500/5 mb-2"
+                      >
+                        <AlertCircle size={18} className="flex-shrink-0" />
+                        <p className="font-medium">{authError}</p>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+
                   <div className="relative">
                     <User className="absolute left-4 top-3.5 text-slate-500" size={20} />
                     <input type="text" name="fullName" placeholder="Full Name" className="w-full pl-12 pr-4 py-3 bg-slate-900/50 border border-slate-700 text-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all placeholder:text-slate-600" required />
@@ -561,7 +620,7 @@ export default function Login() {
 
                   <div className="relative">
                     <Lock className="absolute left-4 top-3.5 text-slate-500" size={20} />
-                    <input type="password" placeholder="Create Password" className="w-full pl-12 pr-4 py-3 bg-slate-900/50 border border-slate-700 text-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all placeholder:text-slate-600" required />
+                    <input type="password" name="password" placeholder="Create Password" className="w-full pl-12 pr-4 py-3 bg-slate-900/50 border border-slate-700 text-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all placeholder:text-slate-600" required />
                   </div>
 
                   <div className="pt-2">
@@ -597,6 +656,21 @@ export default function Login() {
                 className="relative z-10"
               >
                 <form onSubmit={handleLoginSubmit} className="space-y-4">
+                  {/* Auth Error Display */}
+                  <AnimatePresence>
+                    {authError && (
+                      <motion.div
+                        initial={{ opacity: 0, y: -10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -10 }}
+                        className="bg-red-500/10 border border-red-500/20 text-red-400 p-3.5 rounded-xl flex items-center gap-3 text-sm shadow-lg shadow-red-500/5 mb-2"
+                      >
+                        <AlertCircle size={18} className="flex-shrink-0" />
+                        <p className="font-medium">{authError}</p>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+
                   <div className="relative">
                     <Mail className="absolute left-4 top-3.5 text-slate-500" size={20} />
                     <input type="email" name="email" placeholder="Email Address" className="w-full pl-12 pr-4 py-3 bg-slate-900/50 border border-slate-700 text-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all placeholder:text-slate-600" required />
@@ -604,7 +678,7 @@ export default function Login() {
                   
                   <div className="relative">
                     <Lock className="absolute left-4 top-3.5 text-slate-500" size={20} />
-                    <input type="password" placeholder="Password" className="w-full pl-12 pr-4 py-3 bg-slate-900/50 border border-slate-700 text-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all placeholder:text-slate-600" required />
+                    <input type="password" name="password" placeholder="Password" className="w-full pl-12 pr-4 py-3 bg-slate-900/50 border border-slate-700 text-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all placeholder:text-slate-600" required />
                   </div>
 
                   <div className="text-right pt-1">

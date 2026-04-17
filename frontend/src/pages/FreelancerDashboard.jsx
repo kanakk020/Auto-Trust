@@ -1,11 +1,11 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Link, useNavigate } from 'react-router-dom';
 import {
   Wallet, Lock, Unlock, Clock, CheckCircle, IndianRupee, TrendingUp,
   ArrowUpRight, Briefcase, ChevronRight, Upload, ShieldCheck, Star,
   AlertTriangle, Zap, Eye, Timer, FileCheck, CircleCheck, Send,
-  XCircle, AlertCircle, Bot, ArrowLeft
+  XCircle, AlertCircle, Bot, ArrowLeft, Search, Mail, Loader2
 } from 'lucide-react';
 
 const fade = (d = 0) => ({
@@ -16,6 +16,32 @@ const fade = (d = 0) => ({
 
 export default function FreelancerDashboard() {
   const navigate = useNavigate();
+  const [searchEmail, setSearchEmail] = useState('');
+  const [isSearching, setIsSearching] = useState(false);
+  const [searchResult, setSearchResult] = useState(null);
+  const [searchError, setSearchError] = useState('');
+
+  const handleSearchClient = async (e) => {
+    e.preventDefault();
+    if (!searchEmail) return;
+    setIsSearching(true);
+    setSearchError('');
+    setSearchResult(null);
+    try {
+      const res = await fetch(`http://localhost:5000/api/auth/client/${searchEmail}`);
+      const data = await res.json();
+      if (res.ok) {
+        setSearchResult(data);
+      } else {
+        setSearchError(data.message || 'Client not found');
+      }
+    } catch (err) {
+      setSearchError('Connection error while searching.');
+    } finally {
+      setIsSearching(false);
+    }
+  };
+
   const earnings = [
     { label: 'Total Earnings', value: '₹0', icon: IndianRupee, gradient: 'from-emerald-500 to-emerald-600', change: '--', trend: 'up' },
     { label: 'Locked in Escrow', value: '₹0', icon: Lock, gradient: 'from-amber-500 to-orange-500', change: '--', trend: 'hold' },
@@ -63,6 +89,59 @@ export default function FreelancerDashboard() {
           <Upload size={18} />
           Submit Work
         </Link>
+      </motion.div>
+
+      {/* ─── CLIENT SEARCH BAR ─── */}
+      <motion.div {...fade(0.05)} className="relative bg-dark-800/40 border border-emerald-500/30 rounded-2xl p-6 shadow-[0_0_20px_-5px_rgba(16,185,129,0.15)] overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-r from-emerald-500/5 to-primary-500/5 pointer-events-none" />
+        <h2 className="text-sm font-bold text-white mb-4 flex items-center gap-2 relative z-10">
+          <Search size={16} className="text-emerald-400" /> Find Client to Work With
+        </h2>
+        
+        <form onSubmit={handleSearchClient} className="flex flex-col sm:flex-row gap-3 relative z-10">
+          <div className="relative flex-1">
+            <Mail className="absolute left-4 top-3.5 text-dark-500" size={18} />
+            <input 
+              type="email" 
+              placeholder="Enter client's email address..." 
+              value={searchEmail}
+              onChange={(e) => setSearchEmail(e.target.value)}
+              className="w-full pl-11 pr-4 py-3 bg-dark-900 border border-dark-700 text-white rounded-xl focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 outline-none transition-all placeholder:text-dark-600 text-sm"
+              required
+            />
+          </div>
+          <button 
+            type="submit" 
+            disabled={isSearching}
+            className="px-6 py-3 rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 shadow-lg shadow-emerald-500/25 text-white font-semibold flex items-center justify-center gap-2 transition-all disabled:opacity-70"
+          >
+            {isSearching ? <Loader2 size={18} className="animate-spin" /> : <span>Search</span>}
+          </button>
+        </form>
+
+        {/* Display Search Results */}
+        {searchError && (
+          <motion.div initial={{ opacity: 0, y: -5 }} animate={{ opacity: 1, y: 0 }} className="mt-4 p-3.5 bg-danger-500/10 border border-danger-500/20 text-danger-400 text-sm rounded-xl flex items-center gap-2 relative z-10">
+            <AlertTriangle size={18} /> {searchError}
+          </motion.div>
+        )}
+        
+        {searchResult && (
+          <motion.div initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} className="mt-4 p-4 rounded-xl bg-gradient-to-r from-primary-500/10 to-emerald-500/10 border border-primary-500/30 flex items-center justify-between relative z-10 shadow-lg shadow-primary-500/10">
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 rounded-xl bg-primary-500/20 text-primary-400 border border-primary-500/30 flex items-center justify-center font-extrabold text-lg shadow-inner">
+                {searchResult.name.charAt(0).toUpperCase()}
+              </div>
+              <div>
+                <p className="font-bold text-white text-base leading-tight">{searchResult.name}</p>
+                <p className="text-xs text-dark-400 flex items-center gap-1.5 mt-0.5"><Briefcase size={12} className="text-primary-500"/> Verified Client • {searchResult.email}</p>
+              </div>
+            </div>
+            <Link to="/freelancer/submissions" className="text-sm font-bold bg-gradient-to-r from-primary-500 to-accent-500 hover:from-primary-600 hover:to-accent-600 text-white px-5 py-2.5 rounded-xl transition-all shadow-lg shadow-primary-500/20 hover:scale-[1.02]">
+              View Project Details
+            </Link>
+          </motion.div>
+        )}
       </motion.div>
 
       {/* ─── EARNINGS CARDS ─── */}
